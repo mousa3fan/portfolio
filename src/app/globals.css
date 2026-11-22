@@ -161,13 +161,27 @@ body {
   padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
-/* PDF viewer stage — dvh-aware height cap */
-.pdf-stage {
-  max-height: 78vh;
-}
-@supports (max-height: 100dvh) {
+/* PDF viewer — the stage is sized in JS to fit the viewport (9:16 pages).
+   On phones it goes full-bleed so the page fills the whole screen width. */
+@media (max-width: 768px) {
+  .portfolio-safe {
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .portfolio-inner {
+    padding: 0 !important;
+  }
+  .portfolio-label {
+    display: none !important;
+  }
   .pdf-stage {
-    max-height: min(78dvh, 860px);
+    border: none !important;
+    border-radius: 0 !important;
+  }
+}
+@media (max-width: 480px) {
+  .pdf-btn-label {
+    display: none;
   }
 }
 

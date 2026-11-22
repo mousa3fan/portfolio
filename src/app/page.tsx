@@ -96,19 +96,6 @@ function Landing() {
             }}
           />
 
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: "#6B6256",
-              letterSpacing: "0.3em",
-              textTransform: "uppercase",
-              marginBottom: 28,
-            }}
-          >
-            The Portfolio · 2026
-          </div>
-
           <h1
             style={{
               fontFamily: "var(--font-playfair), Georgia, serif",
@@ -134,7 +121,7 @@ function Landing() {
               lineHeight: 1.4,
             }}
           >
-            Cinematographer &amp; Senior Post-Production Lead
+            Cinematographer &amp; Post-Production Lead
           </p>
 
           <div
@@ -158,54 +145,62 @@ function Landing() {
             }}
           >
             Award-winning visual storyteller behind Telepathy, #ABtalks × Cartier,
-            and campaigns for Red Bull, Netflix and Palm Hills. Ten pages of films,
+            and campaigns for Red Bull, Netflix and Palm Hills. Eight pages of films,
             credits, awards, education and experience.
           </p>
 
+          {/* Primary CTA — big */}
           <a
-            href="#portfolio"
+            href="https://vimeo.com/1220305814"
+            target="_blank"
+            rel="noopener noreferrer"
             className="tap-scale"
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 10,
+              justifyContent: "center",
+              gap: 12,
               background: "#B8F02F",
               color: "#161616",
               textDecoration: "none",
-              fontSize: 13,
-              fontWeight: 600,
-              letterSpacing: "0.15em",
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: "0.16em",
               textTransform: "uppercase",
-              padding: "18px 38px",
-              borderRadius: 30,
+              padding: "22px 48px",
+              minWidth: 280,
+              borderRadius: 36,
               transition: "transform 0.2s, box-shadow 0.2s",
-              boxShadow: "0 8px 24px rgba(184, 240, 47, 0.25)",
+              boxShadow: "0 10px 30px rgba(184, 240, 47, 0.3)",
             }}
           >
-            Open the Portfolio <span style={{ fontSize: 16 }}>→</span>
+            <span style={{ fontSize: 14 }}>▶</span> Watch Showreel
           </a>
 
-          <div
-            style={{
-              marginTop: 18,
-              fontSize: 12,
-              color: "#8A8A8A",
-              letterSpacing: "0.05em",
-            }}
-          >
-            or{" "}
+          {/* Secondary CTA — same colours, smaller */}
+          <div style={{ marginTop: 16 }}>
             <a
-              href="https://vimeo.com/1220305814"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#portfolio"
+              className="tap-scale"
               style={{
-                color: "#5C5040",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                background: "#B8F02F",
+                color: "#161616",
                 textDecoration: "none",
-                borderBottom: "1px dotted #999",
-                paddingBottom: 1,
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                padding: "13px 28px",
+                borderRadius: 30,
+                transition: "transform 0.2s, box-shadow 0.2s",
+                boxShadow: "0 6px 18px rgba(184, 240, 47, 0.22)",
               }}
             >
-              watch the showreel on Vimeo
+              Open the Portfolio <span style={{ fontSize: 13 }}>→</span>
             </a>
           </div>
 
@@ -217,7 +212,7 @@ function Landing() {
               letterSpacing: "0.2em",
             }}
           >
-            PDF · 10 PAGES · 5.6 MB
+            PDF · 8 PAGES
           </div>
         </div>
 
@@ -249,6 +244,7 @@ function Landing() {
         }}
       >
         <div
+          className="portfolio-inner"
           style={{
             maxWidth: 1100,
             margin: "0 auto",
@@ -256,6 +252,7 @@ function Landing() {
           }}
         >
           <div
+            className="portfolio-label"
             style={{
               color: "#8A8A8A",
               fontSize: 11,

@@ -37,14 +37,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Mohamed Saafan — Portfolio",
-    description: "Award-Winning Cinematographer & Senior Post-Production Lead",
+    description: "Award-Winning Cinematographer & Post-Production Lead",
     siteName: "Mohamed Saafan Portfolio",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Mohamed Saafan — Portfolio",
-    description: "Award-Winning Cinematographer & Senior Post-Production Lead",
+    description: "Award-Winning Cinematographer & Post-Production Lead",
   },
 };
 

@@ -28,7 +28,7 @@ export default function PdfViewer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const docRef = useRef<any>(null);
   const renderTaskRef = useRef<any>(null);
-  const cacheRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
+  const cacheRef = useRef<Map<number, CachedCanvas>>(new Map());
   const touchRef = useRef<{ x: number; y: number; t: number } | null>(null);
   const renderSeqRef = useRef(0);
 
@@ -38,9 +38,14 @@ export default function PdfViewer() {
   const [total, setTotal] = useState(0);
   const [ratio, setRatio] = useState(0.707); // width/height, A4 default
   const [flip, setFlip] = useState(false);
+  const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
+  // clickable PDF links for the current page, as % of the page box
+  const [links, setLinks] = useState<
+    { url: string; l: number; t: number; w: number; h: number }[]
+  >([]);
 
   /* ---------- cache helpers (free memory of evicted canvases) ---------- */
-  const cachePut = (num: number, canvas: HTMLCanvasElement) => {
+  const cachePut = (num: number, canvas: CachedCanvas) => {
     const cache = cacheRef.current;
     cache.set(num, canvas);
     while (cache.size > CACHE_PAGES) {
@@ -66,11 +71,13 @@ export default function PdfViewer() {
   /* ---------- geometry ---------- */
   const getFitSize = useCallback((baseW: number, baseH: number) => {
     const stage = stageRef.current;
-    const maxW = (stage?.clientWidth || 320) - 2;
-    const maxH = Math.max(
-      320,
-      Math.min(window.innerHeight * 0.78, window.innerWidth * 1.55)
-    );
+    const isPhone = window.innerWidth <= 768;
+    const maxW = (stage?.clientWidth || 320) - (isPhone ? 0 : 2);
+    // Phones: full-bleed, edge to edge.
+    // Desktop: tall page that still fits comfortably in the window.
+    const maxH = isPhone
+      ? 4000 // phones: always fill the full screen width (9:16 page scrolls into view)
+      : Math.max(420, Math.min(window.innerHeight * 0.8, 960));
     const scale = Math.min(maxW / baseW, maxH / baseH);
     return { w: Math.floor(baseW * scale), h: Math.floor(baseH * scale) };
   }, []);
@@ -95,6 +102,7 @@ export default function PdfViewer() {
           canvas.height = cached.height;
           canvas.style.width = `${cached._dispW ?? cached.width}px`;
           canvas.style.height = `${cached._dispH ?? cached.height}px`;
+          setDims({ w: cached._dispW ?? cached.width, h: cached._dispH ?? cached.height });
           ctx.drawImage(cached, 0, 0);
           if (seq === renderSeqRef.current) setRendering(false);
           return;
@@ -118,6 +126,7 @@ export default function PdfViewer() {
         canvas.height = Math.floor(viewport.height);
         canvas.style.width = `${fit.w}px`;
         canvas.style.height = `${fit.h}px`;
+        setDims({ w: fit.w, h: fit.h });
 
         const task = pdfPage.render({
           canvasContext: ctx!,
@@ -234,6 +243,36 @@ export default function PdfViewer() {
     preloadNeighbours(page);
     return () => clearTimeout(t);
   }, [page, status, showPage, preloadNeighbours]);
+
+  /* ---------- clickable links from the PDF (canvas drops them) ---------- */
+  useEffect(() => {
+    if (status !== "ready") return;
+    let dead = false;
+    setLinks([]);
+    (async () => {
+      const doc = docRef.current;
+      if (!doc) return;
+      const pg = await doc.getPage(page);
+      const vp = pg.getViewport({ scale: 1 });
+      const anns = await pg.getAnnotations({ intent: "display" });
+      const out: { url: string; l: number; t: number; w: number; h: number }[] = [];
+      for (const a of anns) {
+        if (a.subtype !== "Link" || !a.url || !a.rect) continue;
+        const [x1, y1, x2, y2] = vp.convertToViewportRectangle(a.rect);
+        out.push({
+          url: a.url,
+          l: (Math.min(x1, x2) / vp.width) * 100,
+          t: (Math.min(y1, y2) / vp.height) * 100,
+          w: (Math.abs(x2 - x1) / vp.width) * 100,
+          h: (Math.abs(y2 - y1) / vp.height) * 100,
+        });
+      }
+      if (!dead) setLinks(out);
+    })().catch(() => {});
+    return () => {
+      dead = true;
+    };
+  }, [page, status]);
 
   /* ---------- re-render on resize / orientation change ---------- */
   useEffect(() => {
@@ -376,9 +415,9 @@ export default function PdfViewer() {
         style={{
           position: "relative",
           width: "100%",
-          aspectRatio: `${Math.max(ratio, 0.4)} / ${1}`,
-          /* max-height is set in globals.css (.pdf-stage) so it can be
-             upgraded to dvh on phones that support it */
+          ...(dims
+            ? { height: dims.h }
+            : { aspectRatio: `${Math.max(ratio, 0.4)} / ${1}`, maxHeight: "85vh" }),
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -391,19 +430,45 @@ export default function PdfViewer() {
           transition: "opacity 0.18s ease",
         }}
       >
-        <canvas
-          ref={canvasRef}
-          aria-label={`Portfolio page ${page} of ${total || "?"}`}
+        <div
           style={{
-            display: "block",
-            maxWidth: "100%",
-            maxHeight: "100%",
-            userSelect: "none",
-            WebkitUserSelect: "none",
-            WebkitTouchCallout: "none",
-            boxShadow: "0 4px 32px rgba(0, 0, 0, 0.45)",
+            position: "relative",
+            flex: "none",
+            ...(dims ? { width: dims.w, height: dims.h } : {}),
           }}
-        />
+        >
+          <canvas
+            ref={canvasRef}
+            aria-label={`Portfolio page ${page} of ${total || "?"}`}
+            style={{
+              display: "block",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+              WebkitTouchCallout: "none",
+            }}
+          />
+          {/* transparent hit-areas over the PDF's own links */}
+          {status === "ready" &&
+            links.map((lk, i) => (
+              <a
+                key={`${page}-${i}`}
+                href={lk.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={lk.url}
+                style={{
+                  position: "absolute",
+                  left: `${lk.l}%`,
+                  top: `${lk.t}%`,
+                  width: `${lk.w}%`,
+                  height: `${lk.h}%`,
+                  display: "block",
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              />
+            ))}
+        </div>
 
         {/* loading overlay (first load) */}
         {status === "loading" && (
@@ -455,28 +520,14 @@ export default function PdfViewer() {
           />
         )}
 
-        {/* page badge */}
-        {status === "ready" && (
-          <div
-            aria-live="polite"
-            style={{
-              position: "absolute",
-              top: 10,
-              left: 12,
-              background: "rgba(22, 22, 22, 0.82)",
-              border: "1px solid #333",
-              borderRadius: 999,
-              padding: "5px 12px",
-              fontSize: 11,
-              letterSpacing: "0.15em",
-              color: "#B8F02F",
-              fontFamily: "var(--font-geist-mono), monospace",
-              pointerEvents: "none",
-            }}
-          >
-            {page} / {total || "—"}
-          </div>
-        )}
+        {/* page number is announced to screen readers only (the dots show it visually,
+            and an overlay badge would cover the artwork on a full-screen page) */}
+        <span
+          aria-live="polite"
+          style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}
+        >
+          Page {page} of {total || "?"}
+        </span>
       </div>
 
       {/* ===== click controls ===== */}
@@ -488,7 +539,8 @@ export default function PdfViewer() {
             justifyContent: "center",
             gap: 10,
             flexWrap: "wrap",
-            marginTop: 14,
+            marginTop: 12,
+            padding: "0 8px",
           }}
         >
           <button
@@ -499,7 +551,8 @@ export default function PdfViewer() {
             className="tap-scale"
             style={{ ...btnStyle, ...(prevDisabled ? disabledStyle : {}) }}
           >
-            <span aria-hidden style={{ fontSize: 15 }}>‹</span> Prev
+            <span aria-hidden style={{ fontSize: 15 }}>‹</span>
+            <span className="pdf-btn-label">Prev</span>
           </button>
 
           {/* clickable page dots — jump straight to any page */}
@@ -544,7 +597,8 @@ export default function PdfViewer() {
             className="tap-scale"
             style={{ ...btnStyle, ...(nextDisabled ? disabledStyle : {}) }}
           >
-            Next <span aria-hidden style={{ fontSize: 15 }}>›</span>
+            <span className="pdf-btn-label">Next</span>
+            <span aria-hidden style={{ fontSize: 15 }}>›</span>
           </button>
 
           <button
