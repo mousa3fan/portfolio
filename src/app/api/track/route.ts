@@ -79,10 +79,11 @@ export async function POST(req: NextRequest) {
     if (apiKey && ownerEmail) {
       try {
         const resend = new Resend(apiKey);
-        const fromEmail = process.env.FROM_EMAIL || "portfolio@msaafan.com";
+        const fromEmail = process.env.FROM_EMAIL || "onboarding@resend.dev";
 
         const locationStr = [city, region, country].filter(Boolean).join(", ") || "Unknown";
         const visitTime = new Date().toUTCString();
+        const adminUrl = `${req.nextUrl.origin}/?admin=1`; // works on any domain you deploy to
 
         const subject = `Portfolio opened — ${locationStr}`;
         const html = `
@@ -98,7 +99,7 @@ export async function POST(req: NextRequest) {
               <tr><td style="padding: 8px 0; color: #8a8a8a;">IP</td><td style="padding: 8px 0; color: #1a1a1a;">${ip || "Unknown"}</td></tr>
             </table>
             <p style="margin: 24px 0 0 0; font-size: 13px; color: #8a8a8a;">
-              View all opens on your <a href="https://msaafan-portfolio.vercel.app/?admin=1" style="color: #B8F02F; text-decoration: none;">dashboard</a>.
+              View all opens on your <a href="${adminUrl}" style="color: #B8F02F; text-decoration: none;">dashboard</a>.
             </p>
           </div>
         `;
