@@ -27,6 +27,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://saafan-plum.vercel.app"),
   title: "Mohamed Saafan — Cinematographer & Post-Production Lead",
   description: "Award-winning cinematographer behind Telepathy, #ABtalks × Cartier, and campaigns for Red Bull, Netflix & Palm Hills. Portfolio of films, credits, awards, education and experience.",
   keywords: ["Mohamed Saafan", "cinematographer", "DP", "video editor", "Cannes", "showreel", "portfolio"],
