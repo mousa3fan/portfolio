@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Visit {
+  id        String   @id @default(cuid())
+  ip        String?
+  city      String?
+  country   String?
+  region    String?
+  latitude  Float?
+  longitude Float?
+  timezone  String?
+  userAgent String?
+  browser   String?
+  os        String?
+  device    String?
+  referrer  String?
+  source    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([country])
+}
+
+model Download {
+  id        String   @id @default(cuid())
+  ip        String?
+  city      String?
+  country   String?
+  region    String?
+  userAgent String?
+  browser   String?
+  os        String?
+  device    String?
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
