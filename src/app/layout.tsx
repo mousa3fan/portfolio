@@ -35,18 +35,27 @@ export const metadata: Metadata = {
     icon: "/logo.svg",
     apple: "/cover-portrait.png",
   },
-  openGraph: {
+ openGraph: {
     title: "Mohamed Saafan — Portfolio",
     description: "Award-Winning Cinematographer & Post-Production Lead",
+    url: "https://saafan-plum.vercel.app",
     siteName: "Mohamed Saafan Portfolio",
+    images: [
+      {
+        url: "https://saafan-plum.vercel.app/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Mohamed Saafan — Portfolio",
+      },
+    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Mohamed Saafan — Portfolio",
     description: "Award-Winning Cinematographer & Post-Production Lead",
+    images: ["https://saafan-plum.vercel.app/og-image.jpg"],
   },
-};
 
 /* Mobile browser tuning:
    • viewportFit: "cover" → page paints edge-to-edge under the iPhone
