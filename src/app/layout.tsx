@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     apple: "/cover-portrait.png",
   },
  openGraph: {
+    openGraph: {
     title: "Mohamed Saafan — Portfolio",
     description: "Award-Winning Cinematographer & Post-Production Lead",
     url: "https://saafan-plum.vercel.app",
@@ -57,8 +58,7 @@ export const metadata: Metadata = {
     description: "Award-Winning Cinematographer & Post-Production Lead",
     images: ["https://saafan-plum.vercel.app/og-image.jpg"],
   },
-
-/* Mobile browser tuning:
+};
    • viewportFit: "cover" → page paints edge-to-edge under the iPhone
      notch / Android camera cut-out (safe-area padding handled in CSS)
    • themeColor → Safari / Chrome UI tint matches the page background
